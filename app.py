@@ -112,24 +112,33 @@ if st.session_state.download_triggered and st.session_state.download_files:
                     label="Download Video",
                     data=file,
                     file_name=os.path.basename(file_path),
-                    mime="video/mp4",
-                    key="auto_download_video",
-                    use_container_width=True
+                    mime="video/mp4"
                 )
+                
+                # Delete the file from the server once the download starts
+                st.session_state.download_triggered = False  # Reset the trigger to indicate download is in progress
+
+                # Add logic to delete the video file once the download has started
+                # This is done by triggering the delete as soon as download is initiated.
                 st.markdown(
                     """
                     <script>
-                    setTimeout(function() {
+                    document.addEventListener('DOMContentLoaded', function() {
                         const downloadButton = document.querySelector('button[aria-label="Download Video"]');
                         if (downloadButton) {
-                            downloadButton.click();
+                            // When the download button is clicked, delete the file from the server
+                            downloadButton.addEventListener('click', function() {
+                                fetch('/delete_video?file=' + encodeURIComponent('""" + file_path + """'))
+                                .then(response => response.text())
+                                .then(data => console.log('Video file deleted:', data))
+                                .catch(error => console.log('Error deleting video file:', error));
+                            });
                         }
-                    }, 1000); // Adjust the timeout as needed
+                    });
                     </script>
                     """,
                     unsafe_allow_html=True
                 )
-
 
 
 # JavaScript to detect the theme
