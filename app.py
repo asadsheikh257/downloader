@@ -1,8 +1,6 @@
 import streamlit as st  # type: ignore
 import subprocess
 import os
-import base64
-import shutil
 
 # Function to download video and save it to a public directory
 def download_video(url, is_playlist, quality, subtitles):
@@ -56,6 +54,10 @@ def download_video(url, is_playlist, quality, subtitles):
 st.set_page_config(page_title="YouTube Downloader", layout="centered")
 st.title("YouTube Video Downloader!")
 
+# Initialize session state variable
+if 'download_triggered' not in st.session_state:
+    st.session_state.download_triggered = False
+
 # Input fields
 with st.container():
     st.markdown("### Input Video Details")
@@ -78,7 +80,7 @@ with st.container():
 with st.container():
     download_button = st.button("Download", key="download_button")
 
-if download_button:
+if download_button or st.session_state.download_triggered:
     if not url:
         st.error("Please provide a valid YouTube URL.")
     else:
@@ -86,6 +88,9 @@ if download_button:
             with st.spinner("Downloading..."):
                 # Download video and get the file path
                 file_paths = download_video(url, is_playlist, quality, subtitles)
+
+                # Mark download triggered to automatically trigger the next download button
+                st.session_state.download_triggered = True
 
                 # Handle single or playlist downloads
                 for file_path in file_paths:
@@ -100,9 +105,10 @@ if download_button:
 
                     # Delete the file after serving
                     os.remove(file_path)
-                    st.info(f"File {os.path.basename(file_path)} has been deleted from the server.")
+                    # st.info(f"File {os.path.basename(file_path)} has been deleted from the server.")
 
             st.success("Download completed successfully!")
+
         except subprocess.CalledProcessError as e:
             st.error(f"An error occurred during the download: {e}")
         except Exception as e:
