@@ -83,7 +83,6 @@ with st.container():
 # Download button
 with st.container():
     download_button = st.button("Download", key="download_button")
-
 if download_button:
     if not url:
         st.error("Please provide a valid YouTube URL.")
@@ -93,11 +92,8 @@ if download_button:
                 # Download video and get the file path
                 file_path = download_video(url, is_playlist, quality, subtitles)
 
-                # Display the video in Streamlit
+                # Provide a direct download button without playing the video
                 with open(file_path, "rb") as file:
-                    st.video(file)
-
-                    # Provide an optional download button as a fallback
                     st.download_button(
                         label="Download Video",
                         data=file,
