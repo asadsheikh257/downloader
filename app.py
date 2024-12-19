@@ -101,34 +101,26 @@ if download_button:
         except Exception as e:
             st.error(f"Unexpected error: {e}")
 
-# Show the download button automatically once the video is downloaded
+# Automatically trigger the download button when the video file is ready
 if st.session_state.download_triggered and st.session_state.download_files:
-    # Loop through the list of downloaded files and show a download button
     for file_path in st.session_state.download_files:
-        with open(file_path, "rb") as file:
-            st.download_button(
-                label="Download Video",
-                data=file,
-                file_name=os.path.basename(file_path),
-                mime="video/mp4"
-            )
-
-        # Optionally delete the file after serving
-        os.remove(file_path)
-        st.info(f"File {os.path.basename(file_path)} has been deleted from the server.")
-
-    # Triggering JavaScript to scroll to the download button
-    st.markdown("""
-    <script>
-        window.onload = function() {
-            const downloadButton = document.querySelector('button[aria-label="Download Video"]');
-            if (downloadButton) {
-                downloadButton.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-    </script>
-    """, unsafe_allow_html=True)
-
+        if os.path.exists(file_path):
+            with open(file_path, "rb") as file:
+                download_button_placeholder = st.empty()
+                download_button = download_button_placeholder.download_button(
+                    label="Download Video",
+                    data=file,
+                    file_name=os.path.basename(file_path),
+                    mime="video/mp4"
+                )
+                st.markdown(
+                    """
+                    <script>
+                    document.querySelector('button[aria-label="Download Video"]').click();
+                    </script>
+                    """,
+                    unsafe_allow_html=True
+                )
 
 
 # JavaScript to detect the theme
