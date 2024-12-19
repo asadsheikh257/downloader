@@ -83,6 +83,7 @@ with st.container():
 # Download button
 with st.container():
     download_button = st.button("Download", key="download_button")
+
 if download_button:
     if not url:
         st.error("Please provide a valid YouTube URL.")
@@ -92,16 +93,23 @@ if download_button:
                 # Download video and get the file path
                 file_path = download_video(url, is_playlist, quality, subtitles)
 
-                # Provide a direct download button without playing the video
+                # Read the video file
                 with open(file_path, "rb") as file:
-                    st.download_button(
-                        label="Download Video",
-                        data=file,
-                        file_name=os.path.basename(file_path),
-                        mime="video/mp4"
-                    )
+                    video_data = file.read()
 
-            st.success("Download completed successfully!")
+                # Automatically trigger the download using JavaScript
+                st.success("Download Started successfully!")
+                st.markdown(
+                    f"""
+                    <a href="data:video/mp4;base64,{video_data.encode('base64').decode()}" download="{os.path.basename(file_path)}">
+                        <script>
+                            document.querySelector('a').click();
+                        </script>
+                        Download Video
+                    </a>
+                    """,
+                    unsafe_allow_html=True,
+                )
         except subprocess.CalledProcessError:
             st.error("An error occurred during the download. Please check the URL and try again.")
 
