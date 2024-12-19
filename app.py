@@ -78,6 +78,7 @@ with st.container():
     )
     subtitles = st.checkbox("Add Subtitles", key="subtitles_checkbox")
 
+
 # Download button
 with st.container():
     download_button = st.button("Download", key="download_button", use_container_width=True)
@@ -118,19 +119,12 @@ if st.session_state.download_triggered and st.session_state.download_files:
                 st.markdown(
                     """
                     <script>
-                    const observer = new MutationObserver((mutations) => {
-                        mutations.forEach((mutation) => {
-                            if (mutation.addedNodes.length) {
-                                const downloadButton = document.querySelector('button[aria-label="Download Video"]');
-                                if (downloadButton) {
-                                    downloadButton.click();
-                                    observer.disconnect();
-                                }
-                            }
-                        });
-                    });
-
-                    observer.observe(document.body, { childList: true, subtree: true });
+                    setTimeout(function() {
+                        const downloadButton = document.querySelector('button[aria-label="Download Video"]');
+                        if (downloadButton) {
+                            downloadButton.click();
+                        }
+                    }, 1000); // Adjust the timeout as needed
                     </script>
                     """,
                     unsafe_allow_html=True
