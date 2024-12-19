@@ -1,0 +1,31 @@
+# Python-related
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual Environment (common)
+venv/
+env/
+*.env
+*.venv
+*.virtualenv
+venv_name
+
+# Streamlit specific
+.cache/
+*.db
+
+# IDE/editor-specific
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Jupyter Notebook files
+.ipynb_checkpoints/
+
+# OS-specific files
+.DS_Store  # macOS
+Thumbs.db  # Windows
