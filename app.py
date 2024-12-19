@@ -80,7 +80,7 @@ with st.container():
 
 # Download button
 with st.container():
-    download_button = st.button("Download", key="download_button")
+    download_button = st.button("Download", key="download_button", use_container_width=True)
 
 if download_button:
     if not url:
@@ -95,13 +95,12 @@ if download_button:
                 st.session_state.download_files = file_paths
                 st.session_state.download_triggered = True
 
-            # st.success("Download completed successfully!")
+            st.success("Download completed successfully!")
         except subprocess.CalledProcessError as e:
             st.error(f"An error occurred during the download: {e}")
         except Exception as e:
             st.error(f"Unexpected error: {e}")
 
-# Direct file download (no button) once the download is complete
 # Direct file download (no button) once the download is complete
 if st.session_state.download_triggered and st.session_state.download_files:
     for file_path in st.session_state.download_files:
