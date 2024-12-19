@@ -101,36 +101,36 @@ if download_button:
         except Exception as e:
             st.error(f"Unexpected error: {e}")
 
-# Automatically trigger the file download
+# Direct file download (no button) once the download is complete
 if st.session_state.download_triggered and st.session_state.download_files:
     for file_path in st.session_state.download_files:
         if os.path.exists(file_path):
             with open(file_path, "rb") as file:
-                # Create the "Download Video" button (not visible to the user)
-                download_button_placeholder = st.empty()
-                download_button = download_button_placeholder.download_button(
-                    label="Download Video",
-                    data=file,
-                    file_name=os.path.basename(file_path),
-                    mime="video/mp4",
-                    key="auto_download_video"
+                # Serve the file directly for download without a button
+                st.download_button(
+                    label="Download Video",  # You can customize the label
+                    data=file,  # The file content
+                    file_name=os.path.basename(file_path),  # File name
+                    mime="video/mp4",  # MIME type
+                    key="auto_download_video",  # Key for uniqueness
+                    use_container_width=True  # Optional: fill the container width
                 )
 
-                # Add JavaScript to trigger the download automatically
-                st.markdown(
-                    """
-                    <script>
-                    window.onload = function() {
-                        // Wait until the download button is rendered
-                        const downloadButton = document.querySelector('button[aria-label="Download Video"]');
-                        if (downloadButton) {
-                            downloadButton.click();  // Automatically click the button
-                        }
-                    };
-                    </script>
-                    """,
-                    unsafe_allow_html=True
-                )
+            # Automatically trigger the download after rendering the button
+            st.markdown(
+                """
+                <script>
+                window.onload = function() {
+                    // Wait until the download button is rendered
+                    const downloadButton = document.querySelector('button[aria-label="Download Video"]');
+                    if (downloadButton) {
+                        downloadButton.click();  // Automatically click the button
+                    }
+                };
+                </script>
+                """,
+                unsafe_allow_html=True
+            )
 
 
 
