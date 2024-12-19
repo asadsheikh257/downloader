@@ -84,6 +84,8 @@ with st.container():
 with st.container():
     download_button = st.button("Download", key="download_button")
 
+import base64
+
 if download_button:
     if not url:
         st.error("Please provide a valid YouTube URL.")
@@ -93,15 +95,17 @@ if download_button:
                 # Download video and get the file path
                 file_path = download_video(url, is_playlist, quality, subtitles)
 
-                # Read the video file
+                # Read the video file and encode it to Base64
                 with open(file_path, "rb") as file:
                     video_data = file.read()
+                    video_base64 = base64.b64encode(video_data).decode("utf-8")
 
                 # Automatically trigger the download using JavaScript
-                st.success("Download Started successfully!")
+                st.success("Download completed successfully!")
+                download_name = os.path.basename(file_path)
                 st.markdown(
                     f"""
-                    <a href="data:video/mp4;base64,{video_data.encode('base64').decode()}" download="{os.path.basename(file_path)}">
+                    <a href="data:video/mp4;base64,{video_base64}" download="{download_name}">
                         <script>
                             document.querySelector('a').click();
                         </script>
