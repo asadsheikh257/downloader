@@ -2,6 +2,7 @@ import streamlit as st  # type: ignore
 import subprocess
 import os
 import base64
+import shutil
 
 # Function to download video and save it to a public directory
 def download_video(url, is_playlist, quality, subtitles):
@@ -42,11 +43,13 @@ def download_video(url, is_playlist, quality, subtitles):
     # Execute the command
     subprocess.run(cmd, check=True)
 
-    # Get the downloaded file path
-    downloaded_file = [
-        f for f in os.listdir(download_dir) if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".webm")
-    ][0]
-    return os.path.join(download_dir, downloaded_file)
+    # Get the downloaded file path(s)
+    downloaded_files = [
+        os.path.join(download_dir, f)
+        for f in os.listdir(download_dir)
+        if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".webm")
+    ]
+    return downloaded_files
 
 
 # Streamlit UI
@@ -82,29 +85,28 @@ if download_button:
         try:
             with st.spinner("Downloading..."):
                 # Download video and get the file path
-                file_path = download_video(url, is_playlist, quality, subtitles)
+                file_paths = download_video(url, is_playlist, quality, subtitles)
 
-                # Prepare file for download
-                with open(file_path, "rb") as file:
-                    video_data = file.read()
-                    video_base64 = base64.b64encode(video_data).decode("utf-8")
-                    download_name = os.path.basename(file_path)
+                # Handle single or playlist downloads
+                for file_path in file_paths:
+                    # Provide a direct download button
+                    with open(file_path, "rb") as file:
+                        st.download_button(
+                            label="Download Video",
+                            data=file,
+                            file_name=os.path.basename(file_path),
+                            mime="video/mp4"
+                        )
 
-                # Generate download link and trigger it
-                st.markdown(
-                    f"""
-                    <a href="data:video/mp4;base64,{video_base64}" download="{download_name}" style="display:none;" id="download_link">
-                        Download Video
-                    </a>
-                    <script>
-                        document.getElementById('download_link').click();
-                    </script>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                st.success("Download completed successfully!")
-        except subprocess.CalledProcessError:
-            st.error("An error occurred during the download. Please check the URL and try again.")
+                    # Delete the file after serving
+                    os.remove(file_path)
+                    st.info(f"File {os.path.basename(file_path)} has been deleted from the server.")
+
+            st.success("Download completed successfully!")
+        except subprocess.CalledProcessError as e:
+            st.error(f"An error occurred during the download: {e}")
+        except Exception as e:
+            st.error(f"Unexpected error: {e}")
 
 
 # JavaScript to detect the theme
