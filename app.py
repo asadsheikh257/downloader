@@ -107,14 +107,14 @@ if st.session_state.download_triggered and st.session_state.download_files:
         if os.path.exists(file_path):
             with open(file_path, "rb") as file:
                 # Serve the file directly for download without a button
-                st.download_button(
+                # st.download_button(
                     label="Download Video",  # You can customize the label
                     data=file,  # The file content
                     file_name=os.path.basename(file_path),  # File name
                     mime="video/mp4",  # MIME type
                     key="auto_download_video",  # Key for uniqueness
                     use_container_width=True  # Optional: fill the container width
-                )
+                # )
 
             # Automatically trigger the download after rendering the button
             st.markdown(
