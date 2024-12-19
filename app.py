@@ -88,6 +88,12 @@ if "download_triggered" not in st.session_state:
 if "download_files" not in st.session_state:
     st.session_state.download_files = []
 
+# URL placeholder (assumed to be provided earlier)
+url = "your_video_url_here"  # Replace with actual URL input
+is_playlist = False  # Placeholder for playlist check
+quality = "high"  # Placeholder for video quality
+subtitles = False  # Placeholder for subtitle inclusion
+
 # Download button (initial step)
 with st.container():
     download_button = st.button("Download", key="download_button")
@@ -118,7 +124,7 @@ if st.session_state.download_triggered and st.session_state.download_files:
         if os.path.exists(file_path):
             with open(file_path, "rb") as file:
                 download_button_placeholder = st.empty()
-                download_button = download_button_placeholder.download_button(
+                download_button_placeholder.download_button(
                     label="Download Video",
                     data=file,
                     file_name=os.path.basename(file_path),
@@ -129,12 +135,13 @@ if st.session_state.download_triggered and st.session_state.download_files:
                 st.markdown(
                     """
                     <script>
-                    document.addEventListener('DOMContentLoaded', function() {
+                    window.onload = function() {
+                        // Find the "Download Video" button and trigger a click
                         const downloadButton = document.querySelector('button[aria-label="Download Video"]');
                         if (downloadButton) {
                             downloadButton.click();
                         }
-                    });
+                    };
                     </script>
                     """,
                     unsafe_allow_html=True
