@@ -1,4 +1,4 @@
-import streamlit as st  # type: ignore
+import streamlit as st
 import subprocess
 import os
 
@@ -103,6 +103,7 @@ if download_button:
 
 # Show the download button automatically once the video is downloaded
 if st.session_state.download_triggered and st.session_state.download_files:
+    # Loop through the list of downloaded files and show a download button
     for file_path in st.session_state.download_files:
         with open(file_path, "rb") as file:
             st.download_button(
@@ -111,10 +112,24 @@ if st.session_state.download_triggered and st.session_state.download_files:
                 file_name=os.path.basename(file_path),
                 mime="video/mp4"
             )
-        
+
         # Optionally delete the file after serving
         os.remove(file_path)
         st.info(f"File {os.path.basename(file_path)} has been deleted from the server.")
+
+    # Triggering JavaScript to scroll to the download button
+    st.markdown("""
+    <script>
+        window.onload = function() {
+            const downloadButton = document.querySelector('button[aria-label="Download Video"]');
+            if (downloadButton) {
+                downloadButton.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
+    """, unsafe_allow_html=True)
+
+
 
 # JavaScript to detect the theme
 st.markdown("""
