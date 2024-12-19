@@ -106,8 +106,9 @@ if st.session_state.download_triggered and st.session_state.download_files:
     for file_path in st.session_state.download_files:
         if os.path.exists(file_path):
             with open(file_path, "rb") as file:
-                # Automatically trigger the download of the video file
-                st.download_button(
+                # Create the "Download Video" button (not visible to the user)
+                download_button_placeholder = st.empty()
+                download_button = download_button_placeholder.download_button(
                     label="Download Video",
                     data=file,
                     file_name=os.path.basename(file_path),
@@ -120,17 +121,16 @@ if st.session_state.download_triggered and st.session_state.download_files:
                     """
                     <script>
                     window.onload = function() {
-                        // Simulate a click on the download button
+                        // Wait until the download button is rendered
                         const downloadButton = document.querySelector('button[aria-label="Download Video"]');
                         if (downloadButton) {
-                            downloadButton.click();
+                            downloadButton.click();  // Automatically click the button
                         }
                     };
                     </script>
                     """,
                     unsafe_allow_html=True
                 )
-
 
 
 
