@@ -102,6 +102,7 @@ if download_button:
             st.error(f"Unexpected error: {e}")
 
 # Direct file download (no button) once the download is complete
+# Direct file download (no button) once the download is complete
 if st.session_state.download_triggered and st.session_state.download_files:
     for file_path in st.session_state.download_files:
         if os.path.exists(file_path):
@@ -118,10 +119,19 @@ if st.session_state.download_triggered and st.session_state.download_files:
                 st.markdown(
                     """
                     <script>
-                    const downloadButton = document.querySelector('button[aria-label="Download Video"]');
-                    if (downloadButton) {
-                        downloadButton.click();
-                    }
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach((mutation) => {
+                            if (mutation.addedNodes.length) {
+                                const downloadButton = document.querySelector('button[aria-label="Download Video"]');
+                                if (downloadButton) {
+                                    downloadButton.click();
+                                    observer.disconnect();
+                                }
+                            }
+                        });
+                    });
+
+                    observer.observe(document.body, { childList: true, subtree: true });
                     </script>
                     """,
                     unsafe_allow_html=True
