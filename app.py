@@ -116,12 +116,17 @@ if st.session_state.download_triggered and st.session_state.download_files:
                 st.markdown(
                     """
                     <script>
-                    document.querySelector('button[aria-label="Download Video"]').click();
+                    // Wait for the button to be rendered
+                    setTimeout(function() {
+                        const downloadButton = document.querySelector('button[aria-label="Download Video"]');
+                        if (downloadButton) {
+                            downloadButton.click();
+                        }
+                    }, 1000); // Adjust the timeout as needed
                     </script>
                     """,
                     unsafe_allow_html=True
                 )
-
 
 # JavaScript to detect the theme
 st.markdown("""
