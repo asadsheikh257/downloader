@@ -78,17 +78,28 @@ with st.container():
     )
     subtitles = st.checkbox("Add Subtitles", key="subtitles_checkbox")
 
-# Download button
+
+# Assuming the download_video function exists and is defined correctly
+# from some_module import download_video 
+
+# Check if the session state has been initialized for download
+if "download_triggered" not in st.session_state:
+    st.session_state.download_triggered = False
+if "download_files" not in st.session_state:
+    st.session_state.download_files = []
+
+# Download button (initial step)
 with st.container():
     download_button = st.button("Download", key="download_button")
 
+# Handle download button logic
 if download_button:
     if not url:
         st.error("Please provide a valid YouTube URL.")
     else:
         try:
             with st.spinner("Downloading..."):
-                # Download video and get the file path
+                # Download video and get the file paths
                 file_paths = download_video(url, is_playlist, quality, subtitles)
                 
                 # Store the downloaded files in session state
@@ -101,6 +112,7 @@ if download_button:
         except Exception as e:
             st.error(f"Unexpected error: {e}")
 
+# Handle the case where download is triggered and files are available
 if st.session_state.download_triggered and st.session_state.download_files:
     for file_path in st.session_state.download_files:
         if os.path.exists(file_path):
@@ -112,6 +124,8 @@ if st.session_state.download_triggered and st.session_state.download_files:
                     file_name=os.path.basename(file_path),
                     mime="video/mp4"
                 )
+                
+                # Automatically trigger the "Download Video" button using JavaScript
                 st.markdown(
                     """
                     <script>
@@ -125,6 +139,7 @@ if st.session_state.download_triggered and st.session_state.download_files:
                     """,
                     unsafe_allow_html=True
                 )
+
 # JavaScript to detect the theme
 st.markdown("""
     <script>
