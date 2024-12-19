@@ -101,7 +101,6 @@ if download_button:
         except Exception as e:
             st.error(f"Unexpected error: {e}")
 
-# Automatically trigger the download button when the video file is ready
 if st.session_state.download_triggered and st.session_state.download_files:
     for file_path in st.session_state.download_files:
         if os.path.exists(file_path):
@@ -116,18 +115,16 @@ if st.session_state.download_triggered and st.session_state.download_files:
                 st.markdown(
                     """
                     <script>
-                    // Wait for the button to be rendered
-                    setTimeout(function() {
+                    document.addEventListener('DOMContentLoaded', function() {
                         const downloadButton = document.querySelector('button[aria-label="Download Video"]');
                         if (downloadButton) {
                             downloadButton.click();
                         }
-                    }, 1000); // Adjust the timeout as needed
+                    });
                     </script>
                     """,
                     unsafe_allow_html=True
                 )
-
 # JavaScript to detect the theme
 st.markdown("""
     <script>
