@@ -1,40 +1,30 @@
-import streamlit as st # type: ignore
+import streamlit as st  # type: ignore
 import subprocess
 import os
-import tempfile
-import shutil
+import base64
 
 # Function to download video and save it to a public directory
 def download_video(url, is_playlist, quality, subtitles):
     # Create a temporary directory to save the downloaded video
-    download_dir = 'downloads'
+    download_dir = "downloads"
     os.makedirs(download_dir, exist_ok=True)
 
     # Base command for yt-dlp
     cmd = ["yt-dlp", "-o", os.path.join(download_dir, "%(title)s.%(ext)s")]
 
-    # Add format options for video and audio (same as before)
-    if quality == "144p":
-        cmd += ["-f", "bv*[height<=144][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "240p":
-        cmd += ["-f", "bv*[height<=240][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "360p":
-        cmd += ["-f", "bv*[height<=360][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "480p":
-        cmd += ["-f", "bv*[height<=480][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "720p":
-        cmd += ["-f", "bv*[height<=720][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "1080p":
-        cmd += ["-f", "bv*[height<=1080][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "1440p":
-        cmd += ["-f", "bv*[height<=1440][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "2160p":
-        cmd += ["-f", "bv*[height<=2160][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    else:
-        cmd += ["-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]"]
-
-    # Set output format to mp4
-    cmd += ["--merge-output-format", "mp4"]
+    # Add format options for video and audio
+    quality_formats = {
+        "144p": "bv*[height<=144][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]",
+        "240p": "bv*[height<=240][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]",
+        "360p": "bv*[height<=360][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]",
+        "480p": "bv*[height<=480][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]",
+        "720p": "bv*[height<=720][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]",
+        "1080p": "bv*[height<=1080][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]",
+        "1440p": "bv*[height<=1440][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]",
+        "2160p": "bv*[height<=2160][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]",
+        "Best Available": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]",
+    }
+    cmd += ["-f", quality_formats.get(quality, "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]")]
 
     # Subtitles options
     if subtitles:
@@ -52,11 +42,12 @@ def download_video(url, is_playlist, quality, subtitles):
     # Execute the command
     subprocess.run(cmd, check=True)
 
-    # Return the path to the downloaded file
-    downloaded_file = [f for f in os.listdir(download_dir) if f.endswith('.mp4') or f.endswith('.mkv') or f.endswith('.webm')][0]
-    file_path = os.path.join(download_dir, downloaded_file)
+    # Get the downloaded file path
+    downloaded_file = [
+        f for f in os.listdir(download_dir) if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".webm")
+    ][0]
+    return os.path.join(download_dir, downloaded_file)
 
-    return file_path
 
 # Streamlit UI
 st.set_page_config(page_title="YouTube Downloader", layout="centered")
@@ -76,15 +67,13 @@ with st.container():
         "Select Video Quality",
         ["144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "Best Available"],
         index=4,
-        key="quality_select"
+        key="quality_select",
     )
     subtitles = st.checkbox("Add Subtitles", key="subtitles_checkbox")
 
 # Download button
 with st.container():
     download_button = st.button("Download", key="download_button")
-
-import base64
 
 if download_button:
     if not url:
@@ -95,27 +84,28 @@ if download_button:
                 # Download video and get the file path
                 file_path = download_video(url, is_playlist, quality, subtitles)
 
-                # Read the video file and encode it to Base64
+                # Prepare file for download
                 with open(file_path, "rb") as file:
                     video_data = file.read()
                     video_base64 = base64.b64encode(video_data).decode("utf-8")
+                    download_name = os.path.basename(file_path)
 
-                # Automatically trigger the download using JavaScript
-                st.success("Download completed successfully!")
-                download_name = os.path.basename(file_path)
+                # Generate download link and trigger it
                 st.markdown(
                     f"""
-                    <a href="data:video/mp4;base64,{video_base64}" download="{download_name}">
-                        <script>
-                            document.querySelector('a').click();
-                        </script>
+                    <a href="data:video/mp4;base64,{video_base64}" download="{download_name}" style="display:none;" id="download_link">
                         Download Video
                     </a>
+                    <script>
+                        document.getElementById('download_link').click();
+                    </script>
                     """,
                     unsafe_allow_html=True,
                 )
+                st.success("Download completed successfully!")
         except subprocess.CalledProcessError:
             st.error("An error occurred during the download. Please check the URL and try again.")
+
 
 # JavaScript to detect the theme
 st.markdown("""
