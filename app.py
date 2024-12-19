@@ -81,14 +81,14 @@ with st.container():
 
 # Download button
 with st.container():
-    download_button = st.button("Download", key="download_button", use_container_width=True)
+    download_button = st.button("Start", key="download_button", use_container_width=True)
 
 if download_button:
     if not url:
         st.error("Please provide a valid YouTube URL.")
     else:
         try:
-            with st.spinner("Downloading..."):
+            with st.spinner("Preprocessing..."):
                 # Download video and get the file path
                 file_paths = download_video(url, is_playlist, quality, subtitles)
                 
