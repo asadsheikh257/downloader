@@ -57,6 +57,8 @@ st.title("YouTube Video Downloader!")
 # Initialize session state variable
 if 'download_triggered' not in st.session_state:
     st.session_state.download_triggered = False
+if 'download_files' not in st.session_state:
+    st.session_state.download_files = []
 
 # Input fields
 with st.container():
@@ -80,7 +82,7 @@ with st.container():
 with st.container():
     download_button = st.button("Download", key="download_button")
 
-if download_button or st.session_state.download_triggered:
+if download_button:
     if not url:
         st.error("Please provide a valid YouTube URL.")
     else:
@@ -88,32 +90,31 @@ if download_button or st.session_state.download_triggered:
             with st.spinner("Downloading..."):
                 # Download video and get the file path
                 file_paths = download_video(url, is_playlist, quality, subtitles)
-
-                # Mark download triggered to automatically trigger the next download button
+                
+                # Store the downloaded files in session state
+                st.session_state.download_files = file_paths
                 st.session_state.download_triggered = True
 
-                # Handle single or playlist downloads
-                for file_path in file_paths:
-                    # Provide a direct download button
-                    with open(file_path, "rb") as file:
-                        st.download_button(
-                            label="Download Video",
-                            data=file,
-                            file_name=os.path.basename(file_path),
-                            mime="video/mp4"
-                        )
-
-                    # Delete the file after serving
-                    os.remove(file_path)
-                    # st.info(f"File {os.path.basename(file_path)} has been deleted from the server.")
-
             st.success("Download completed successfully!")
-
         except subprocess.CalledProcessError as e:
             st.error(f"An error occurred during the download: {e}")
         except Exception as e:
             st.error(f"Unexpected error: {e}")
 
+# Show the download button automatically once the video is downloaded
+if st.session_state.download_triggered and st.session_state.download_files:
+    for file_path in st.session_state.download_files:
+        with open(file_path, "rb") as file:
+            st.download_button(
+                label="Download Video",
+                data=file,
+                file_name=os.path.basename(file_path),
+                mime="video/mp4"
+            )
+        
+        # Optionally delete the file after serving
+        os.remove(file_path)
+        st.info(f"File {os.path.basename(file_path)} has been deleted from the server.")
 
 # JavaScript to detect the theme
 st.markdown("""
