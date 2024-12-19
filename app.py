@@ -105,23 +105,27 @@ if download_button:
 if st.session_state.download_triggered and st.session_state.download_files:
     for file_path in st.session_state.download_files:
         if os.path.exists(file_path):
-            open(file_path, "rb")
-
-            # Automatically trigger the download after rendering the button
-            st.markdown(
-                """
-                <script>
-                window.onload = function() {
-                    // Wait until the download button is rendered
+            with open(file_path, "rb") as file:
+                download_button_placeholder = st.empty()
+                download_button = download_button_placeholder.download_button(
+                    label="Download Video",
+                    data=file,
+                    file_name=os.path.basename(file_path),
+                    mime="video/mp4",
+                    key="auto_download_video",
+                    use_container_width=True
+                )
+                st.markdown(
+                    """
+                    <script>
                     const downloadButton = document.querySelector('button[aria-label="Download Video"]');
                     if (downloadButton) {
-                        downloadButton.click();  // Automatically click the button
+                        downloadButton.click();
                     }
-                };
-                </script>
-                """,
-                unsafe_allow_html=True
-            )
+                    </script>
+                    """,
+                    unsafe_allow_html=True
+                )
 
 
 
