@@ -96,7 +96,6 @@ if download_button:
                 st.session_state.download_files = file_paths
                 st.session_state.download_triggered = True
 
-            st.success("Download completed successfully!")
         except subprocess.CalledProcessError as e:
             st.error(f"An error occurred during the download: {e}")
         except Exception as e:
@@ -112,7 +111,8 @@ if st.session_state.download_triggered and st.session_state.download_files:
                     label="Download Video",
                     data=file,
                     file_name=os.path.basename(file_path),
-                    mime="video/mp4"
+                    mime="video/mp4",
+                    use_container_width=True
                 )
                 
                 # Delete the file from the server once the download starts
