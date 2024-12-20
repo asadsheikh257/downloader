@@ -92,16 +92,16 @@ if download_button:
                 file_path = download_video(url, is_playlist, quality, subtitles)
 
                 # Provide a download link/button for the user to download the video
-                # with open(file_path, "rb") as file:
-                #     st.download_button(
-                #         label="Download Video",
-                #         data=file,
-                #         file_name=os.path.basename(file_path),
-                #         mime="video/mp4"
-                #     )
-                with open(file_path, "rb") as f:
-                    buffer = f.read()
-                    st.download_button("Download to local", buffer)
+                with open(file_path, "rb") as file:
+                    st.download_button(
+                        label="Download Video",
+                        data=file.read(),
+                        file_name=os.path.basename(file_path),
+                        mime="video/mp4"
+                    )
+                # with open(file_path, "rb") as f:
+                #     buffer = f.read()
+                #     st.download_button("Download to local", buffer)
 
             st.success("Download completed successfully!")
         except subprocess.CalledProcessError:
