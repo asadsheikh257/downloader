@@ -105,15 +105,9 @@ if download_button:
 if st.session_state.download_triggered and st.session_state.download_files:
     for file_path in st.session_state.download_files:
         if os.path.exists(file_path):
-            with open(file_path, "rb") as file:
-                download_button_placeholder = st.empty()
-                download_button = download_button_placeholder.download_button(
-                    label="Download Video",
-                    data=file,
-                    file_name=os.path.basename(file_path),
-                    mime="video/mp4",
-                    use_container_width=True
-                )
+            with open(file_path, "rb") as f:
+                buffer = f.read()
+                st.download_button("Download", buffer)
                 
                 # Delete the file from the server once the download starts
                 st.session_state.download_triggered = False  # Reset the trigger to indicate download is in progress
