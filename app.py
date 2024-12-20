@@ -2,59 +2,48 @@ import streamlit as st
 import subprocess
 import os
 import tempfile
+from moviepy.editor import VideoFileClip, AudioFileClip
 
-# Function to download video and save it to a temporary directory
+# Function to merge audio and video using moviepy
+def merge_audio_video(video_path, audio_path, output_path):
+    video_clip = VideoFileClip(video_path)
+    audio_clip = AudioFileClip(audio_path)
+
+    final_clip = video_clip.set_audio(audio_clip)
+    final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
+
+    video_clip.close()
+    audio_clip.close()
+
+# Function to download video and audio separately and merge them
 def download_video(url, is_playlist, quality, subtitles):
-    # Create a temporary directory to save the downloaded video
+    # Create a temporary directory to save the downloaded files
     temp_dir = tempfile.mkdtemp()
 
-    # Base command for yt-dlp
-    cmd = ["yt-dlp", "-o", os.path.join(temp_dir, "%(title)s.%(ext)s")]
+    # Base paths for video and audio
+    video_path = os.path.join(temp_dir, "video.mp4")
+    audio_path = os.path.join(temp_dir, "audio.m4a")
+    output_path = os.path.join(temp_dir, "output.mp4")
 
-    # Add format options for video and audio (same as before)
-    if quality == "144p":
-        cmd += ["-f", "bv*[height<=144][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "240p":
-        cmd += ["-f", "bv*[height<=240][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "360p":
-        cmd += ["-f", "bv*[height<=360][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "480p":
-        cmd += ["-f", "bv*[height<=480][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "720p":
-        cmd += ["-f", "bv*[height<=720][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "1080p":
-        cmd += ["-f", "bv*[height<=1080][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "1440p":
-        cmd += ["-f", "bv*[height<=1440][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    elif quality == "2160p":
-        cmd += ["-f", "bv*[height<=2160][ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]"]
-    else:
-        cmd += ["-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]"]
+    # Download video
+    video_cmd = [
+        "yt-dlp", "-f", f"bv*[height<={quality}][ext=mp4]", "-o", video_path, url
+    ]
 
-    # Set output format to mp4
-    cmd += ["--merge-output-format", "mp4"]
+    # Download audio
+    audio_cmd = [
+        "yt-dlp", "-f", "ba[ext=m4a]", "-o", audio_path, url
+    ]
 
-    # Subtitles options
-    if subtitles:
-        cmd += ["--write-sub", "--sub-lang", "en", "--embed-subs"]
+    # Execute the commands
+    subprocess.run(video_cmd, check=True)
+    subprocess.run(audio_cmd, check=True)
 
-    # Playlist or single video
-    if is_playlist:
-        cmd += ["-o", os.path.join(temp_dir, "%(playlist_index)s. %(title)s.%(ext)s")]
-    else:
-        cmd += ["-o", os.path.join(temp_dir, "%(title)s.%(ext)s")]
+    # Merge video and audio
+    merge_audio_video(video_path, audio_path, output_path)
 
-    # Add the URL
-    cmd.append(url)
-
-    # Execute the command
-    subprocess.run(cmd, check=True)
-
-    # Return the path to the downloaded file
-    downloaded_file = [f for f in os.listdir(temp_dir) if f.endswith('.mp4') or f.endswith('.mkv') or f.endswith('.webm')][0]
-    file_path = os.path.join(temp_dir, downloaded_file)
-
-    return file_path
+    # Return the path to the merged file
+    return output_path
 
 # Streamlit UI
 st.set_page_config(page_title="YouTube Downloader", layout="centered")
@@ -72,7 +61,7 @@ with st.container():
     st.markdown("### Options")
     quality = st.selectbox(
         "Select Video Quality",
-        ["144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "Best Available"],
+        ["144", "240", "360", "480", "720", "1080", "1440", "2160"],
         index=4,
         key="quality_select"
     )
@@ -87,7 +76,7 @@ if download_button:
         st.error("Please provide a valid YouTube URL.")
     else:
         try:
-            with st.spinner("Downloading..."):
+            with st.spinner("Downloading and processing..."):
                 # Download video and get the file path
                 file_path = download_video(url, is_playlist, quality, subtitles)
 
